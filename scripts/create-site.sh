@@ -30,6 +30,10 @@ docker compose exec -T backend bench new-site \
     --db-root-password="$MARIADB_ROOT_PASSWORD" \
     "$SITE_NAME"
 
+# Set Redis communication with Langchain
+echo "Enabling redis communication between LMS and Langchain"
+docker compose exec -T backend bench --site "$SITE_NAME" set-config langchain_use_redis true
+
 # Install AI Tutor Chat
 echo "📦 Installing AI Tutor Chat..."
 docker compose exec -T backend bench --site "$SITE_NAME" install-app ai_tutor_chat

@@ -73,6 +73,11 @@ docker compose exec -T backend bench --site "$SITE_NAME" migrate
 # Restarting backend
 docker compose restart backend
 
+# Download and Install payments in queue workers to
+docker compose exec queue-short bash -lc 'cd /home/frappe/frappe-bench/apps && git clone https://github.com/frappe/payments.git && pip install -e payments'
+docker compose exec queue-long bash -lc 'cd /home/frappe/frappe-bench/apps && git clone https://github.com/frappe/payments.git && pip install -e payments'
+docker compose restart queue-short queue-long
+
 echo "✅ Site created successfully!"
 echo ""
 echo "📋 Site details:"

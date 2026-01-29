@@ -20,7 +20,7 @@ on:
 
   # Webhook triggers from watched repositories
   repository_dispatch:
-    types: [academy-lms-updated, academy-ai-tutor-updated, academy-langchain-updated]
+    types: [academy-lms-updated, academy-langchain-updated]
 
   # Push to master branch of this repo
   push:
@@ -83,7 +83,6 @@ jobs:
         cache-to: type=gha,mode=max
         build-args: |
           LMS_REPO_URL=https://github.com/ExarLabs/academy-lms
-          AI_TUTOR_REPO_URL=https://github.com/ExarLabs/academy-ai-tutor-chat
 
     - name: Clone and prepare LangChain service
       run: |

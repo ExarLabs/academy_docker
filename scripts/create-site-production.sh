@@ -24,9 +24,6 @@ docker compose exec backend bench new-site $SITE_NAME \
 echo "Installing LMS app..."
 docker compose exec backend bench --site $SITE_NAME install-app lms
 
-echo "Installing AI Tutor Chat app..."
-docker compose exec backend bench --site $SITE_NAME install-app ai_tutor_chat
-
 # Set site configuration
 echo "Configuring site..."
 docker compose exec backend bench --site $SITE_NAME set-config db_host mariadb

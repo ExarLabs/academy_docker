@@ -69,9 +69,6 @@ docker compose exec backend bench new-site academy.local \
 # Install the LMS app
 docker compose exec backend bench --site academy.local install-app lms
 
-# Install the AI Tutor Chat app
-docker compose exec backend bench --site academy.local install-app ai_tutor_chat
-
 # Set the site as default
 docker compose exec backend bench use academy.local
 ```

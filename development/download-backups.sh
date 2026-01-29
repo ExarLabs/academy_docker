@@ -18,7 +18,8 @@
 #   4. Download only files matching the specified/latest backup timestamp to the development/backups folder
 #
 # Requires: HETZNER_SSH_PASSWORD environment variable set in .env file
-# Requires: sshpass (sudo apt install sshpas)
+# Requires: HETZNER_SERVER environment variable set in .env file (e.g., root@188.245.211.114)
+# Requires: sshpass (sudo apt install sshpass)
 
 # Check if site name is provided
 if [ -z "$1" ]; then
@@ -30,7 +31,6 @@ fi
 
 SITE_NAME="$1"
 BACKUP_TIMESTAMP="${2:-}"  # Optional: specific backup timestamp to download
-SERVER="root@188.245.211.114"
 LIVE_PATH="/var/lib/docker/volumes/frappe-deployment_sites/_data/${SITE_NAME}/private/backups/"
 
 # Load environment variables from .env file
@@ -49,9 +49,9 @@ download_backup_set() {
         echo "Looking for backup timestamp: ${PREFIX}"
 
         if [ "$IS_CONTAINER" = "true" ]; then
-            FILE_COUNT=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "docker exec frappe-deployment-backend-1 sh -c \"ls ${BACKUP_PATH}/${PREFIX}* 2>/dev/null | wc -l\"")
+            FILE_COUNT=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "docker exec frappe-deployment-backend-1 sh -c \"ls ${BACKUP_PATH}/${PREFIX}* 2>/dev/null | wc -l\"")
         else
-            FILE_COUNT=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "ls ${BACKUP_PATH}/${PREFIX}* 2>/dev/null | wc -l")
+            FILE_COUNT=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "ls ${BACKUP_PATH}/${PREFIX}* 2>/dev/null | wc -l")
         fi
 
         if [ "$FILE_COUNT" -eq 0 ]; then
@@ -63,10 +63,10 @@ download_backup_set() {
         # Find the latest backup timestamp
         if [ "$IS_CONTAINER" = "true" ]; then
             # Get latest prefix from inside container
-            PREFIX=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "docker exec frappe-deployment-backend-1 sh -c \"ls -t ${BACKUP_PATH}/ 2>/dev/null | head -1 | cut -d'-' -f1\"")
+            PREFIX=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "docker exec frappe-deployment-backend-1 sh -c \"ls -t ${BACKUP_PATH}/ 2>/dev/null | head -1 | cut -d'-' -f1\"")
         else
             # Get latest prefix from host filesystem
-            PREFIX=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "ls -t ${BACKUP_PATH}/ 2>/dev/null | head -1 | cut -d'-' -f1")
+            PREFIX=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "ls -t ${BACKUP_PATH}/ 2>/dev/null | head -1 | cut -d'-' -f1")
         fi
         echo "Found latest backup set: ${PREFIX}"
     fi
@@ -81,14 +81,14 @@ download_backup_set() {
 
     if [ "$IS_CONTAINER" = "true" ]; then
         # Copy from container: use tar to stream only matching files
-        sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "rm -rf ${TEMP_DIR} && mkdir -p ${TEMP_DIR} && docker exec frappe-deployment-backend-1 sh -c 'cd ${BACKUP_PATH} && tar cf - ${PREFIX}*' | tar xf - -C ${TEMP_DIR}"
+        sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "rm -rf ${TEMP_DIR} && mkdir -p ${TEMP_DIR} && docker exec frappe-deployment-backend-1 sh -c 'cd ${BACKUP_PATH} && tar cf - ${PREFIX}*' | tar xf - -C ${TEMP_DIR}"
     else
         # Copy from host: copy only matching files to temp dir
-        sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "rm -rf ${TEMP_DIR} && mkdir -p ${TEMP_DIR} && cp ${BACKUP_PATH}/${PREFIX}* ${TEMP_DIR}/"
+        sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "rm -rf ${TEMP_DIR} && mkdir -p ${TEMP_DIR} && cp ${BACKUP_PATH}/${PREFIX}* ${TEMP_DIR}/"
     fi
 
-    sshpass -p "$HETZNER_SSH_PASSWORD" scp "${SERVER}:${TEMP_DIR}/"* ./development/backups/
-    sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "rm -rf ${TEMP_DIR}"
+    sshpass -p "$HETZNER_SSH_PASSWORD" scp "${HETZNER_SERVER}:${TEMP_DIR}/"* ./development/backups/
+    sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "rm -rf ${TEMP_DIR}"
 
     echo "Download complete."
 }
@@ -100,14 +100,14 @@ download_from_archived_site() {
     ARCHIVED_BASE="/home/frappe/frappe-bench/archived/sites"
 
     # Find the latest archived directory matching the site name pattern (sorted by modification time)
-    LATEST_ARCHIVED=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "docker exec frappe-deployment-backend-1 sh -c \"ls -td ${ARCHIVED_BASE}/${SITE_NAME}* 2>/dev/null | head -1\"")
+    LATEST_ARCHIVED=$(sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "docker exec frappe-deployment-backend-1 sh -c \"ls -td ${ARCHIVED_BASE}/${SITE_NAME}* 2>/dev/null | head -1\"")
 
     if [ -n "$LATEST_ARCHIVED" ]; then
         ARCHIVED_BACKUP_PATH="${LATEST_ARCHIVED}/private/backups"
         echo "Found latest archived site: ${LATEST_ARCHIVED}"
 
         # Check if backup directory exists in the archived site
-        if sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "docker exec frappe-deployment-backend-1 test -d '${ARCHIVED_BACKUP_PATH}'"; then
+        if sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "docker exec frappe-deployment-backend-1 test -d '${ARCHIVED_BACKUP_PATH}'"; then
             echo "Downloading from archived location..."
             download_backup_set "$ARCHIVED_BACKUP_PATH" "true"
         else
@@ -122,9 +122,9 @@ download_from_archived_site() {
 
 # Check if live site exists and has backup files
 echo "Checking if site ${SITE_NAME} is live..."
-if sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "[ -d '$LIVE_PATH' ]"; then
+if sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "[ -d '$LIVE_PATH' ]"; then
     # Check if backup directory has files
-    if sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$SERVER" "[ -n \"\$(ls -A '$LIVE_PATH' 2>/dev/null)\" ]"; then
+    if sshpass -p "$HETZNER_SSH_PASSWORD" ssh "$HETZNER_SERVER" "[ -n \"\$(ls -A '$LIVE_PATH' 2>/dev/null)\" ]"; then
         echo "Site is live with backup files. Downloading from live location..."
         download_backup_set "$LIVE_PATH" "false"
     else

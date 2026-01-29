@@ -2,18 +2,17 @@
 
 This repository is configured to automatically deploy the Academy LMS stack to Hetzner Cloud, including:
 - Frappe Framework with custom Academy LMS app
-- AI Tutor Chat application
 - LangChain service for AI functionality
 
 ## Architecture Overview
 
 ```
-┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
-│   academy-lms       │     │ academy-ai-tutor    │     │ academy-langchain   │
-│   (GitHub Repo)     │     │   (GitHub Repo)     │     │   (GitHub Repo)     │
-└──────────┬──────────┘     └──────────┬──────────┘     └──────────┬──────────┘
-           │                           │                           │
-           └───────────────────────────┴───────────────────────────┘
+┌─────────────────────┐                           ┌─────────────────────┐
+│   academy-lms       │                           │ academy-langchain   │
+│   (GitHub Repo)     │                           │   (GitHub Repo)     │
+└──────────┬──────────┘                           └──────────┬──────────┘
+           │                                                 │
+           └─────────────────────────────────────────────────┘
                                        │
                               Webhook Triggers
                                        │
@@ -77,11 +76,7 @@ Add the webhook workflow files to each watched repository:
    - Copy `.github/workflows/webhook-academy-lms.yml` to the academy-lms repo
    - Add secret `ACADEMY_DOCKER_PAT` with the same PAT
 
-2. **For academy-ai-tutor-chat repository:**
-   - Copy `.github/workflows/webhook-academy-ai-tutor.yml` to the academy-ai-tutor-chat repo
-   - Add secret `ACADEMY_DOCKER_PAT` with the same PAT
-
-3. **For academy-LangChain repository:**
+2. **For academy-LangChain repository:**
    - Copy `.github/workflows/webhook-academy-langchain.yml` to the academy-LangChain repo
    - Add secret `ACADEMY_DOCKER_PAT` with the same PAT
 
@@ -147,7 +142,6 @@ cd /opt/frappe-deployment
 The script will:
 - Create a new Frappe site
 - Install Academy LMS app
-- Install AI Tutor Chat app
 - Configure the site
 - Run migrations
 
@@ -164,7 +158,7 @@ The system automatically deploys when:
 ### What Happens During Deployment
 
 1. **Build Phase**:
-   - Builds custom Frappe image with Academy LMS and AI Tutor apps
+   - Builds custom Frappe image with Academy LMS app
    - Tags and pushes to GitHub Container Registry
 
 2. **Deploy Phase**:

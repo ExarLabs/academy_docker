@@ -116,7 +116,6 @@ USER frappe
 ARG FRAPPE_BRANCH=version-15
 ARG FRAPPE_PATH=https://github.com/frappe/frappe
 ARG LMS_REPO_URL=https://github.com/ExarLabs/academy-lms
-ARG AI_TUTOR_REPO_URL=https://github.com/ExarLabs/academy-ai-tutor-chat
 
 # Initialize Frappe bench
 RUN bench init \
@@ -132,9 +131,6 @@ WORKDIR /home/frappe/frappe-bench
 
 # Install Academy LMS app
 RUN bench get-app lms ${LMS_REPO_URL}
-
-# Install AI Tutor Chat app  
-RUN bench get-app ai_tutor_chat ${AI_TUTOR_REPO_URL}
 
 # Setup common site config
 RUN echo "{}" > sites/common_site_config.json && \

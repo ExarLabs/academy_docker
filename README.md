@@ -15,10 +15,9 @@ This is a fork of [frappe/frappe_docker](https://github.com/frappe/frappe_docker
 The stack includes:
 
 1. **[Academy LMS](https://github.com/ExarLabs/academy-lms)** - Custom fork of Frappe LMS
-2. **[Academy AI Tutor Chat](https://github.com/ExarLabs/academy-ai-tutor-chat)** - AI-powered tutoring Frappe app
-3. **[Academy LangChain](https://github.com/ExarLabs/academy-LangChain)** - LangChain service for AI functionality
-4. **Frappe Framework** - The underlying framework
-5. **Supporting Services** - MariaDB, Redis, PostgreSQL, Nginx
+2. **[Academy LangChain](https://github.com/ExarLabs/academy-LangChain)** - LangChain service for AI functionality
+3. **Frappe Framework** - The underlying framework
+4. **Supporting Services** - MariaDB, Redis, PostgreSQL, Nginx
 
 ## 🚀 I. Quick Start (Local)
 

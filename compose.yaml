@@ -84,6 +84,7 @@ services:
 
       - DATABASE_URL=postgresql://${LANGCHAIN_DB_USER:-langchain_user}:${LANGCHAIN_DB_PASSWORD:-langchain_pass}@postgres:5432/${LANGCHAIN_DB_NAME:-langchain_db}
       - REDIS_URL=redis://redis:6379
+      - ENABLE_REDIS_EVENTS=true
       - ENV=${LANGCHAIN_ENV:-development}
       - DEBUG=${LANGCHAIN_DEBUG:-true}
     networks:

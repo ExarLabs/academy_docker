@@ -34,10 +34,6 @@ docker compose exec -T backend bench new-site \
 echo "Enabling redis communication between LMS and Langchain"
 docker compose exec -T backend bench --site "$SITE_NAME" set-config langchain_use_redis true
 
-# Install AI Tutor Chat
-echo "📦 Installing AI Tutor Chat..."
-docker compose exec -T backend bench --site "$SITE_NAME" install-app ai_tutor_chat
-
 # Install LMS
 echo "📦 Installing Academy LMS..."
 docker compose exec -T backend bench --site "$SITE_NAME" install-app lms

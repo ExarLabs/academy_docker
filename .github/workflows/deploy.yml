@@ -175,6 +175,14 @@ jobs:
           ./scripts/migrate-all-sites.sh
         "
 
+    - name: Recreate queue workers
+      run: |
+        # queues tend to cache Python's module state which could cause unrecognizing some frappe apps 
+        ssh ${{ env.HETZNER_USER }}@${{ env.HETZNER_HOST }} "
+          cd ${{ env.DEPLOY_PATH }}
+          docker compose up -d --force-recreate queue-short queue-long
+        "
+
     - name: Check service status
       run: |
         ssh ${{ env.HETZNER_USER }}@${{ env.HETZNER_HOST }} "

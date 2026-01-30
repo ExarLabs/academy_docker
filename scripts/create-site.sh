@@ -71,11 +71,17 @@ echo "🔄 Running migrations..."
 docker compose exec -T backend bench --site "$SITE_NAME" migrate
 
 # Restarting backend
+echo "🔄 Restarting backend..."
 docker compose restart backend
 
 # Download and Install payments in queue workers to
+echo "📦 Downloading and installing Payments app for queue-short container..."
 docker compose exec queue-short bash -lc 'cd /home/frappe/frappe-bench/apps && git clone https://github.com/frappe/payments.git && pip install -e payments'
+
+echo "📦 Downloading and installing Payments app for queue-long container..."
 docker compose exec queue-long bash -lc 'cd /home/frappe/frappe-bench/apps && git clone https://github.com/frappe/payments.git && pip install -e payments'
+
+echo "🔄 Recreating queue-short and queue-long containers..."
 docker compose up -d --force-recreate queue-short queue-long
 
 echo "✅ Site created successfully!"

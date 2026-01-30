@@ -39,10 +39,13 @@ echo "📦 Installing Academy LMS..."
 docker compose exec -T backend bench --site "$SITE_NAME" install-app lms
 
 # Download Payments App (if needed)
-if docker compose exec -T backend test -d apps/payments; then
-    echo "✅ Payments App already downloaded"
+# Check apps.txt, not just directory - directory can exist without being registered
+if docker compose exec -T backend bash -c 'grep -q "^payments$" /home/frappe/frappe-bench/sites/apps.txt 2>/dev/null'; then
+    echo "✅ Payments App already registered in apps.txt"
 else
     echo "📦 Downloading Payments App..."
+    # Remove partial directory if it exists to ensure clean state
+    docker compose exec -T backend bash -c 'rm -rf apps/payments 2>/dev/null || true'
     docker compose exec -T backend bench get-app payments
 fi
 

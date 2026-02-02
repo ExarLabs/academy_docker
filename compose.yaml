@@ -124,6 +124,8 @@ services:
       - ENABLE_REDIS_EVENTS=true
       - ENV=${LANGCHAIN_ENV:-development}
       - DEBUG=${LANGCHAIN_DEBUG:-true}
+      - SHARED_DATA_SERVICE_URL=http://shared-data-service:8001
+      - SHARED_DATA_API_KEY=${SHARED_DATA_API_KEY}
     networks:
       - langchain-network
     depends_on:

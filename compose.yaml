@@ -44,6 +44,43 @@ services:
       - langchain-network
     restart: unless-stopped
 
+  # MongoDB for shared-data-service
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - langchain-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Shared Data Service for cross-service data access
+  shared-data-service:
+    image: ${SHARED_DATA_IMAGE:-ghcr.io/exarlabs/academy-shared-data-service}:${SHARED_DATA_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      MONGODB_URL: mongodb://${MONGODB_ROOT_USER:-admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017
+      MONGODB_DB_NAME: academy_shared
+      API_KEY: ${SHARED_DATA_API_KEY}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - langchain-network
+      - frappe-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # PostgreSQL for LangChain service
   postgres:
     image: postgres:15
@@ -194,6 +231,7 @@ volumes:
   sites:
   mariadb-data:
   postgres-data:
+  mongodb-data:
 
     # Networks for service communication
 networks:

@@ -30,9 +30,10 @@ docker compose exec -T backend bench new-site \
     --db-root-password="$MARIADB_ROOT_PASSWORD" \
     "$SITE_NAME"
 
-# Set Redis communication with Langchain
-echo "Enabling redis communication between LMS and Langchain"
-docker compose exec -T backend bench --site "$SITE_NAME" set-config langchain_use_redis true
+# Set Redis communication with Langchain and shared data service config
+echo "Configuring LangChain Redis and shared data service settings"
+docker compose exec -T backend bench --site "$SITE_NAME" set-config --as-dict \
+    "{\"langchain_use_redis\": true, \"shared_data_service_url\": \"$SHARED_DATA_SERVICE_URL\", \"shared_data_api_key\": \"$SHARED_DATA_API_KEY\"}"
 
 # Install LMS
 echo "📦 Installing Academy LMS..."

@@ -20,7 +20,7 @@ on:
 
   # Webhook triggers from watched repositories
   repository_dispatch:
-    types: [academy-lms-updated, academy-langchain-updated]
+    types: [academy-lms-updated, academy-langchain-updated, academy-shared-data-service-updated]
 
   # Push to master branch of this repo
   push:
@@ -88,6 +88,11 @@ jobs:
       run: |
         # Clone private repository using PAT (Personal Access Token)
         git clone https://${{ secrets.ACADEMY_DOCKER_PAT }}@github.com/ExarLabs/academy-LangChain.git langchain-temp
+
+    - name: Clone and prepare Shared Data service
+      run: |
+        # Clone private repository using PAT (Personal Access Token)
+        git clone https://${{ secrets.ACADEMY_DOCKER_PAT }}@github.com/ExarLabs/academy-shared-data-service.git shared-data-temp
         
     - name: Extract metadata for LangChain image
       id: meta-langchain
@@ -107,6 +112,27 @@ jobs:
         push: true
         tags: ${{ steps.meta-langchain.outputs.tags }}
         labels: ${{ steps.meta-langchain.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Extract metadata for Shared Data Service image
+      id: meta-shared-data
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/exarlabs/academy-shared-data-service
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Shared Data Service image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./shared-data-temp
+        push: true
+        tags: ${{ steps.meta-shared-data.outputs.tags }}
+        labels: ${{ steps.meta-shared-data.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 

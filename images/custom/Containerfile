@@ -129,6 +129,9 @@ RUN bench init \
 
 WORKDIR /home/frappe/frappe-bench
 
+# Fix: dropbox SDK requires pkg_resources from setuptools
+RUN /home/frappe/frappe-bench/env/bin/pip install setuptools
+
 # Install Academy LMS app
 RUN bench get-app lms ${LMS_REPO_URL}
 

@@ -32,8 +32,11 @@ docker compose exec -T backend bench new-site \
 
 # Set Redis communication with Langchain and shared data service config
 echo "Configuring LangChain Redis and shared data service settings"
-docker compose exec -T backend bench --site "$SITE_NAME" set-config --as-dict \
-    "{\"langchain_use_redis\": true, \"shared_data_service_url\": \"$SHARED_DATA_SERVICE_URL\", \"shared_data_api_key\": \"$SHARED_DATA_API_KEY\"}"
+docker compose exec -T backend bash -c "
+    bench --site '$SITE_NAME' set-config langchain_use_redis True --parse &&
+    bench --site '$SITE_NAME' set-config shared_data_service_url '$SHARED_DATA_SERVICE_URL' &&
+    bench --site '$SITE_NAME' set-config shared_data_api_key '$SHARED_DATA_API_KEY'
+"
 
 # Install LMS
 echo "📦 Installing Academy LMS..."

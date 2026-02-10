@@ -129,8 +129,10 @@ RUN bench init \
 
 WORKDIR /home/frappe/frappe-bench
 
-# Fix: dropbox SDK requires pkg_resources from setuptools
-RUN /home/frappe/frappe-bench/env/bin/pip install setuptools
+# Frappe v15 still includes Dropbox Settings; older dropbox SDK builds import
+# pkg_resources (removed from modern setuptools). Install a pkg_resources-free
+# SDK version so new site creation works without pinning setuptools.
+RUN /home/frappe/frappe-bench/env/bin/pip install --upgrade "dropbox>=12.0.2"
 
 # Install Academy LMS app
 RUN bench get-app lms ${LMS_REPO_URL}
